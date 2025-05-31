@@ -71,7 +71,7 @@ def set_goal(message):
 @bot.message_handler(commands=['motivate'])
 def motivate(message):
     motivations = [
-        "dfПродолжайте в том же духе, ваше здоровье скажет вам спасибо!",
+        "Продолжайте в том же духе, ваше здоровье скажет вам спасибо!",
         "Каждый стакан воды приближает вас к здоровой жизни!",
         "Вы великолепны! Не забывайте пить воду!" ]
     bot.reply_to(message, random.choice(motivations))
