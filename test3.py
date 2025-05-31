@@ -73,7 +73,7 @@ def motivate(message):
     motivations = [
         "Продолжайте в том же духе, ваше здоровье скажет вам спасибо!",
         "Каждый стакан воды приближает вас к здоровой жизни!",
-        "Вы - великолепны! Не забывайте пить воду!" ]
+        "Вы великолепны! Не забывайте пить воду!" ]
     bot.reply_to(message, random.choice(motivations))
 
 def send_reminders(chat_id):
