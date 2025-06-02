@@ -16,7 +16,7 @@ class Task:
             'status': status
         }
         self.tasks.append(new_task)
-        print(f"Задача добавлена: {description}")
+        print(f"Задача добавлена успешно: {description}")
 
     def close_task(self, description):
         for task in self.tasks:

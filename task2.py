@@ -25,7 +25,7 @@ class Store:
             return True
         return False
 
-my_store1 = Store('Перекресток', "ул. Мира,1", None)
+my_store1 = Store('Перекресток', "ул. Мира,2", None)
 my_store1.add_item("Молоко", 85.50)
 my_store1.add_item("Хлеб", 45.30)
 
