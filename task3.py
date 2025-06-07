@@ -1,38 +1,41 @@
-class User():
+class User:
     def __init__(self, id=None, name=None):
-        self._id =  id
+        self._id = id
         self._name = name
-        self._users = []
 
+    @property
     def id(self):
         return self._id
 
+    @id.setter
     def id(self, value):
         self._id = value
 
+    @property
     def name(self):
         return self._name
 
+    @name.setter
     def name(self, value):
         self._name = value
 
-    def users(self):
-        return self._users.copy()
 
 class Admin(User):
     def __init__(self, id, name, access):
         super().__init__(id, name)
         self._access = access
+        self._users = []  # список пользователей теперь хранится только в Admin
 
+    @property
     def access(self):
         return self._access
 
     def add_user(self, id, name):
-        new_user = {'id': id,'name': name}
+        new_user = {'id': id, 'name': name}
         if any(user['id'] == id for user in self._users):
             print(f"Внимание: пользователь с id '{id}' уже есть")
             return
-        self.users.append(new_user)
+        self._users.append(new_user)
         print(f"{name} - добавление успешно")
 
     def remove_user(self, id):
@@ -42,4 +45,7 @@ class Admin(User):
                 print(f"Пользователь с id {id} - удаление успешно")
                 return
         print(f"Пользователь с id {id} - не существует")
+
+    def users(self):
+        return self._users.copy()
 
