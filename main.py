@@ -1,13 +1,19 @@
-password_true = 'qwerty123'
-password = ""
-count = 0
+import requests
+import pprint
 
-while password != password_true :
-    if count < 3:
-        password = input ('Введите пароль - ')
-        count += 1
-    else:
-        print('Доступ  не разрешен')
-        break
-if  password == password_true:
-    print('Доступ разрешен')
+url = "https://jsonplaceholder.typicode.com/posts"
+data = {'title': 'foo', 'body': 'bar', 'userId': 1}
+
+response = requests.post(url, data)
+
+print(response.status_code)
+if response.ok:
+    print('Запрос успешно выполнен')
+else:
+    print('Произошла ошибка')
+
+print (response.content)
+response_json = response.json()
+pprint.pprint(response_json)
+
+
