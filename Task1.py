@@ -4,8 +4,7 @@ import requests
 from bs4 import BeautifulSoup
 
 
-# Токен бота
-TOKEN = '8136343436:AAHjqtXn68_tTkQeBLzx25LCg_l5gFr-770'
+TOKEN = "Ваш токен"
 
 bot = telebot.TeleBot(TOKEN)
 

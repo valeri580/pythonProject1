@@ -13,7 +13,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-TOKEN = "7799920386:AAFeER2_NdZxv9TIQpso3AGlorZSoyk33IU"
+TOKEN = "ваш токен"
 bot = telebot.TeleBot(TOKEN)
 
 DB_path = "product.db"

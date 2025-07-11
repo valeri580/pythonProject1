@@ -1,4 +1,4 @@
-api_key = "3a079d921e7a857f7c4cb036d7354289"
+api_key = "ваш ключ"
 
 import requests as rq
 
