@@ -1,10 +1,14 @@
-api_key = "ваш ключ"
-
+from dotenv import load_dotenv
+import os
 import requests as rq
+
+
+load_dotenv()
+OPENWEATHER_API_KEY = os.getenv("OPENWEATHER_API_KEY")
 
 city = "Moscow"
 
-url = f"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units=metric&lang=ru"
+url = f"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={OPENWEATHER_API_KEY}&units=metric&lang=ru"
 
 response = rq.get(url)
 print(response.status_code)
