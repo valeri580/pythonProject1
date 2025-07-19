@@ -1,5 +1,8 @@
 import scrapy
-
+import time
+import csv
+from selenium import webdriver
+from selenium.webdriver.common.by import By
 
 class DivannewparsSpider(scrapy.Spider):
     name = "divannewpars"
@@ -14,5 +17,7 @@ class DivannewparsSpider(scrapy.Spider):
                 'price': svet.css('div.q5Uds span::text').get(),
                 'url': svet.css('a').attrib['href']
             }
+
+
 
 
