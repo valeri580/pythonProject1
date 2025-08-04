@@ -1,0 +1,105 @@
+    body {
+  margin: 0;
+  padding: 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f8f9fa;
+}
+
+.cards-container {
+  display: flex;
+  gap: 25px;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Стили карточки */
+.card {
+  flex: 1 1 280px;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  background-color: white;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+/* Эффекты при наведении на карточку */
+.card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.15);
+}
+
+.card:hover .photo img {
+  transform: scale(1.05);
+}
+
+.card:hover::after {
+  opacity: 1;
+}
+
+/* Стили для фото */
+.photo {
+  height: 520px;
+  overflow: hidden;
+}
+
+.photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+/* Стили для информации */
+.info {
+  padding: 20px;
+  background-color: white;
+}
+
+.info h1 {
+  font-size: 20px;
+  margin: 0 0 12px 0;
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+.info p {
+  margin: 8px 0;
+  font-size: 15px;
+  color: #555;
+  line-height: 1.5;
+}
+
+.info p:last-child {
+  margin-top: 15px;
+  font-weight: bold;
+  color: #3498db;
+}
+
+/* Цветные акценты для карточек */
+.card:nth-child(1) {
+  border-top: 5px solid #e74c3c;
+}
+
+.card:nth-child(2) {
+  border-top: 5px solid #2ecc71;
+}
+
+.card:nth-child(3) {
+  border-top: 5px solid #3498db;
+}
+
+/* Дополнительные эффекты при наведении */
+.card:hover:nth-child(1) {
+  background-color: #fdedec;
+}
+
+.card:hover:nth-child(2) {
+  background-color: #e8f8f5;
+}
+
+.card:hover:nth-child(3) {
+  background-color: #ebf5fb;
+}    }
