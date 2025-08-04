@@ -1,9 +1,22 @@
 import requests
 import telebot
 import logging
-from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
+from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, KeyboardButton
 from dotenv import load_dotenv
+import scv
+import csv  # Работа с CSV-файлами
+from datetime import datetime  # Работа с датой/временем
+from io import BytesIO
+import pandas as pd  # Анализ данных
+import matplotlib.pyplot as plt  # Визуализация данных
 import os
+
+# Импорт компонентов Telegram API
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, KeyboardButton, \
+    ReplyKeyboardRemove
+from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, CallbackContext, MessageHandler, Filters, \
+    ConversationHandler
+
 
 # Настройка логгирования
 logging.basicConfig(
@@ -19,176 +32,369 @@ load_dotenv()
 VALERIADMIN_TG_BOT_API_KEY = os.getenv("VALERIADMIN_TG_BOT_API_KEY")
 OPENWEATHER_API_KEY = os.getenv("OPENWEATHER_API_KEY")
 CBR_API_URL = "https://www.cbr-xml-daily.ru/daily_json.js"
+WEATHER_LOG_PATH = "weather_logs.csv"  # Путь к файлу логов погодных запросов
+ADMIN_IDS = os.getenv("ADMIN_IDS")  # Список ID администраторов бота
 
-# Инициализация бота
-bot = telebot.TeleBot(VALERIADMIN_TG_BOT_API_KEY)
+# Определение состояний для ConversationHandler
+WAIT_CITY, SHOW_INFO = range(2)  # Состояния: ожидание города и показ информации
+
+#Создание и инициализация файла логов
+if not os.path.exists(WEATHER_LOG_PATH):
+    with open(WEATHER_LOG_PATH, 'w', newline='', encoding='utf-8') as file:
+        writer = csv.writer(file)
+        writer.writerow(['timestamp', 'user_id', 'username', 'city', 'status'])
+else:
+    with open(WEATHER_LOG_PATH, 'r', encoding='utf-8') as f:
+        first_line = f.readline().strip()
+        if not first_line.startswith('timestamp') or 'user_id' not in first_line:
+            with open(WEATHER_LOG_PATH, 'r+', encoding='utf-8') as f:
+                content = f.read()
+                f.seek(0, 0)
+                f.write('timestamp,user_id,username,city,status\n' + content)
 
 
-def main_menu():
-    keyboard = [
-        [InlineKeyboardButton("🌤 Погода", callback_data='weather'),
-         InlineKeyboardButton("💱 Курсы валют", callback_data='currency')],
-        [InlineKeyboardButton("ℹ️ Информация", callback_data='info')]
-    ]
-    return InlineKeyboardMarkup(keyboard)
-
-
-def back_to_menu():
-    keyboard = [
-        [InlineKeyboardButton("🔙 Назад в меню", callback_data='back')]
-    ]
-    return InlineKeyboardMarkup(keyboard)
-
-
-@bot.message_handler(commands=['start'])
-def start(message):
-    """Обработчик команды /start"""
+def log_weather_request(user_id: int, username: str, city: str, status: str):
+    """Записывает информацию о запросе погоды в CSV-лог"""
     try:
-        bot.send_message(
-            message.chat.id,
-            "Я бот, который выдаёт курсы валют и погоду!",
-            reply_markup=main_menu()
+        # Открытие файла в режиме добавления
+        with open(WEATHER_LOG_PATH, 'a', newline='', encoding='utf-8') as file:
+            writer = csv.writer(file)
+            # Формирование строки лога
+            writer.writerow([
+                datetime.now().isoformat(),  # Текущая дата и время
+                user_id,  # ID пользователя
+                username,  # Имя пользователя
+                city,  # Запрошенный город
+                status  # Статус запроса: success/error/city_not_found
+            ])
+    except Exception as e:
+        # Обработка ошибок записи в лог
+        logger.error(f"Ошибка записи в лог: {e}")
+
+
+def create_reply_keyboard():
+    """Создает клавиатуру с основными командами"""
+    return ReplyKeyboardMarkup(
+        [
+            ["🌤️ Узнать погоду", "Каталог"],  # Первый ряд кнопок
+            ['📞 Контакты', "Мой профиль"],  # Второй ряд
+            # Специальные кнопки с запросом данных
+            [KeyboardButton("Отправить контакт", request_contact=True),
+             KeyboardButton("Отправить геолокацию", request_location=True)]
+        ],
+        resize_keyboard=True,  # Автоматическое изменение размера
+        input_field_placeholder="Выберите действие"  # Подсказка в поле ввода
+    )
+
+
+def create_profile_keyboard():
+    """Создает клавиатуру для раздела профиля"""
+    return ReplyKeyboardMarkup(
+        [["✏Изменить имя", "Дата рождения"], ["Главное меню"]],
+        resize_keyboard=True,  # Автоматическое изменение размера
+        one_time_keyboard=True  # Скрытие после использования
+    )
+
+
+def create_main_menu_keyboard():
+    """Создает инлайн-клавиатуру главного меню"""
+    keyboard = [
+        [
+            # Кнопки первого ряда
+            InlineKeyboardButton("🌤️ Посмотреть погоду", callback_data='weather'),
+            InlineKeyboardButton("🖥️ Открыть сайт ZeroCoder", url="https://zerocoder.ru"),
+        ],
+        [
+            # Кнопки второго ряда
+            InlineKeyboardButton("💶 Курсы валют", callback_data='currency'),
+            InlineKeyboardButton("💰 Поддержать", url="https://donate.com")
+        ],
+        [InlineKeyboardButton("❌ Закрыть", callback_data='close')]  # Кнопка закрытия
+    ]
+    return InlineKeyboardMarkup(keyboard)  # Возврат разметки клавиатуры
+
+
+def start(update: Update, context: CallbackContext) -> None:
+    """Обработчик команды /start"""
+    user = update.effective_user  # Получение информации о пользователе
+    # Приветственное сообщение с основной клавиатурой
+    update.message.reply_text(
+        f"Привет, {user.first_name}! Я твой бот помощник. Что ты хочешь сделать?",
+        reply_markup=create_reply_keyboard()
+    )
+    # Сообщение с инлайн-меню
+    update.message.reply_text(
+        "Используйте кнопки ниже или меню: ",
+        reply_markup=create_main_menu_keyboard()
+    )
+
+
+def button_click(update: Update, context: CallbackContext) -> int:
+    """Обработчик нажатий инлайн-кнопок"""
+    query = update.callback_query  # Данные callback-запроса
+    query.answer()  # Подтверждение получения callback
+
+    # Обработка кнопки погоды
+    if query.data == "weather":
+        query.message.reply_text(
+            "Введите название города:",
+            reply_markup=ReplyKeyboardRemove()  # Удаление текущей клавиатуры
+        )
+        return WAIT_CITY  # Переход в состояние ожидания города
+
+    # Обработка кнопки курсов валют
+    elif query.data == 'currency':
+        show_currency_rates(query)  # Вызов функции показа курсов
+        return SHOW_INFO  # Переход в состояние показа информации
+
+    # Обработка кнопки возврата в меню
+    elif query.data == 'back_to_menu':
+        query.edit_message_text(
+            text="Главное меню: ",
+            reply_markup=create_main_menu_keyboard()  # Обновление меню
+        )
+        return ConversationHandler.END  # Завершение диалога
+
+    # Обработка кнопки закрытия
+    elif query.data == 'close':
+        query.delete_message()  # Удаление сообщения с меню
+        return ConversationHandler.END  # Завершение диалога
+
+    return ConversationHandler.END  # Запасной вариант завершения
+
+
+def get_weather(update: Update, context: CallbackContext) -> int:
+    """Получает и отображает погоду для указанного города"""
+    city = update.message.text  # Извлечение города из сообщения
+    user = update.effective_user  # Информация о пользователе
+    user_id = user.id if user else 0  # ID пользователя (0 если не определен)
+    username = user.username or user.first_name or "Unknown"  # Имя пользователя
+
+    # Формирование URL для запроса погоды
+    url = f"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={OPENWEATHER_API_KEY}&units=metric&lang=ru"
+
+    try:
+        response = requests.get(url)  # Выполнение HTTP-запроса
+        data = response.json()  # Парсинг JSON-ответа
+
+        # Обработка успешного ответа
+        if response.status_code == 200:
+            # Логирование успешного запроса
+            log_weather_request(user_id, username, city, 'success')
+
+            # Формирование строки с информацией о погоде
+            weather_info = (
+                f"Погода в {city}:\n"
+                f"Температура: {data['main']['temp']} °C\n"
+                f"Состояние: {data['weather'][0]['description']}\n"
+                f"Влажность: {data['main']['humidity']} %\n"
+                f"Ветер: {data['wind']['speed']} м/с"
+            )
+            # Создание кнопки возврата
+            keyboard = [[InlineKeyboardButton("🔙 Назад в меню", callback_data="back_to_menu")]]
+            # Отправка информации о погоде
+            update.message.reply_text(weather_info, reply_markup=InlineKeyboardMarkup(keyboard))
+            return SHOW_INFO  # Переход в состояние показа информации
+
+        # Обработка ошибки "город не найден"
+        log_weather_request(user_id, username, city, 'city_not_found')
+        update.message.reply_text("Город не найден, попробуйте еще раз:")
+        return WAIT_CITY  # Повторный запрос города
+
+    except Exception as e:
+        # Обработка системных ошибок
+        log_weather_request(user_id, username, city, 'error')
+        logger.error(f"Ошибка при получении погоды: {e}")
+        update.message.reply_text("Произошла ошибка. Попробуйте позже")
+        return ConversationHandler.END  # Завершение диалога
+
+
+def show_currency_rates(query):
+    """Отображает текущие курсы валют"""
+    try:
+        response = requests.get(CBR_API_URL)  # Запрос к API ЦБ
+        data = response.json()  # Парсинг JSON-ответа
+        rates = data['Valute']  # Извлечение данных о валютах
+
+        # Формирование текста с курсами
+        text = (
+            f"Курсы ЦБ РФ:\n"
+            f"Доллар USA: {rates['USD']['Value']:.2f} ₽\n"
+            f"Евро: {rates['EUR']['Value']:.2f} ₽\n"
+            f"Юань: {rates['CNY']['Value']:.2f} ₽\n"
+        )
+        # Кнопка возврата в меню
+        keyboard = [[InlineKeyboardButton("🔙 Назад в меню", callback_data="back_to_menu")]]
+        # Обновление сообщения с курсами
+        query.edit_message_text(
+            text=text, reply_markup=InlineKeyboardMarkup(keyboard)
         )
     except Exception as e:
-        logger.error(f"Ошибка в start: {e}", exc_info=True)
+        # Обработка ошибок получения курсов
+        logger.error(f"Ошибка при получении курса валют: {e}")
+        query.edit_message_text("Не удалось получить курсы валют")
 
 
-@bot.callback_query_handler(func=lambda call: True)
-def callback_handler(call):
-    """Обработчик нажатий на inline-кнопки"""
+def cancel(update: Update, context: CallbackContext) -> int:
+    """Отмена текущего действия"""
+    update.message.reply_text("Действие отменено", reply_markup=create_reply_keyboard())
+    return ConversationHandler.END  # Завершение диалога
+
+
+def weather_stats(update: Update, context: CallbackContext):
+    """Показывает статистику запросов погоды (только для администраторов)"""
+    # Преобразуем в список чисел
+    admin_ids_list = [int(id.strip()) for id in ADMIN_IDS.split(",")]
+
+    # Проверяем
+    if update.effective_user.id not in admin_ids_list:
+        update.message.reply_text("⚠️ Эта команда доступна только администраторам")
+        return
+
     try:
-        if call.data == 'weather':
-            bot.answer_callback_query(call.id)
-            msg = bot.send_message(
-                call.message.chat.id,
-                "Введите название города:",
-                reply_markup=back_to_menu()
-            )
-            bot.register_next_step_handler(msg, process_weather_city)
-
-        elif call.data == 'currency':
-            bot.answer_callback_query(call.id)
-            show_currency_rates(call.message)
-
-        elif call.data == 'info':
-            bot.answer_callback_query(call.id)
-            bot.edit_message_text(
-                chat_id=call.message.chat.id,
-                message_id=call.message.message_id,
-                text="ℹ️ Это учебный бот\nВерсия 2.0",
-                reply_markup=main_menu()
-            )
-
-        elif call.data == 'back':
-            bot.answer_callback_query(call.id)
-            bot.edit_message_text(
-                chat_id=call.message.chat.id,
-                message_id=call.message.message_id,
-                text="Я бот, который выдаёт курсы валют и погоду!",
-                reply_markup=main_menu()
-            )
-
-    except Exception as e:
-        logger.error(f"Ошибка в callback_handler: {e}", exc_info=True)
-        bot.answer_callback_query(call.id, text="Произошла ошибка, попробуйте позже")
-
-
-def process_weather_city(message):
-    """Обработка ввода города для погоды"""
-    try:
-        city = message.text
-        weather_data = get_weather(city)
-
-        if weather_data == 404:
-            msg = bot.send_message(
-                message.chat.id,
-                "Город не найден. Попробуй ещё раз:",
-                reply_markup=back_to_menu()
-            )
-            bot.register_next_step_handler(msg, process_weather_city)
+        # Проверка существования и доступности файла логов
+        if not os.path.exists(WEATHER_LOG_PATH) or os.path.getsize(WEATHER_LOG_PATH) == 0:
+            update.message.reply_text("📊 Статистика пока недоступна. Запросы еще не делались.")
             return
 
-        if weather_data:
-            response = (f"Погода в {city}:\n"
-                        f"Температура: {round(weather_data['temp'], 1)}°C\n"
-                        f"Ощущается как: {round(weather_data['feels_like'], 1)}°C\n"
-                        f"Влажность: {weather_data['humidity']}%\n"
-                        f"Описание: {weather_data['description']}")
-        else:
-            response = "Не удалось получить данные о погоде"
+        # Чтение и обработка файла логов
+        logs = []
+        with open(WEATHER_LOG_PATH, 'r', encoding='utf-8') as f:
+            reader = csv.reader(f)
+            next(reader, None)  # Пропуск заголовка
 
-        bot.send_message(
-            message.chat.id,
-            response,
-            reply_markup=main_menu()
+            for row in reader:
+                if not row:  # Пропуск пустых строк
+                    continue
+                # Нормализация строк (добавление недостающих значений)
+                if len(row) < 5:
+                    row += [''] * (5 - len(row))
+                logs.append(row[:5])  # Сохранение только первых 5 значений
+
+        # Создание DataFrame из логов
+        df = pd.DataFrame(logs, columns=['timestamp', 'user_id', 'username', 'city', 'status'])
+
+        # Проверка на наличие данных
+        if df.empty:
+            update.message.reply_text("📊 Статистика пока недоступна. Нет данных для анализа.")
+            return
+
+        # Преобразование user_id в числовой формат
+        df['user_id'] = pd.to_numeric(df['user_id'], errors='coerce')
+
+        # Расчет основных метрик
+        total_requests = len(df)  # Общее количество запросов
+        status_counts = df['status'].value_counts()  # Распределение по статусам
+        success_requests = status_counts.get('success', 0)  # Успешные запросы
+        error_requests = status_counts.get('error', 0)  # Ошибки сервера
+        city_not_found = status_counts.get('city_not_found', 0)  # Города не найдены
+        unique_users = df['user_id'].nunique()  # Уникальные пользователи
+
+        # Топ-5 городов (только успешные запросы)
+        popular_cities = df[df['status'] == 'success']['city'].value_counts().head(5)
+
+        # Формирование текстового отчета
+        report = (
+            f"📊 Статистика запросов погоды:\n"
+            f"• Всего запросов: {total_requests}\n"
+            f"• Успешных запросов: {success_requests}\n"
+            f"• Ошибок 'город не найден': {city_not_found}\n"
+            f"• Системных ошибок: {error_requests}\n"
+            f"• Уникальных пользователей: {unique_users}\n\n"
+            f"🏙️ Топ-5 запрашиваемых городов:\n"
         )
-    except Exception as e:
-        logger.error(f"Ошибка в process_weather_city: {e}", exc_info=True)
-        bot.send_message(message.chat.id, "Произошла ошибка при обработке запроса")
 
-
-def get_weather(city):
-    """Получение данных о погоде"""
-    try:
-        url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={OPENWEATHER_API_KEY}&units=metric&lang=ru"
-        response = requests.get(url)
-
-        if response.status_code == 404:
-            return 404
-
-        data = response.json()
-
-        if response.status_code == 200:
-            return {
-                'temp': data['main']['temp'],
-                'feels_like': data['main']['feels_like'],
-                'humidity': data['main']['humidity'],
-                'description': data['weather'][0]['description']
-            }
-        return None
-    except Exception as e:
-        logger.error(f"Ошибка в get_weather: {e}", exc_info=True)
-        return None
-
-
-def show_currency_rates(message):
-    """Показать курсы валют"""
-    try:
-        rates = get_currency_rates()
-        if rates:
-            response = (f"Курсы валют ЦБ РФ:\n"
-                        f"🇺🇸 USD: {rates['USD']} руб.\n"
-                        f"🇪🇺 EUR: {rates['EUR']} руб.\n"
-                        f"🇨🇳 CNY: {rates['CNY']} руб.")
+        # Добавление информации о городах
+        if not popular_cities.empty:
+            for city, count in popular_cities.items():
+                report += f"  - {city}: {count}\n"
         else:
-            response = "Не удалось получить курсы валют"
+            report += "  Нет данных о городах\n"
 
-        bot.send_message(
-            message.chat.id,
-            response,
-            reply_markup=main_menu()
-        )
+        # Анализ ежедневной активности
+        try:
+            # Преобразование времени и фильтрация
+            df['timestamp'] = pd.to_datetime(df['timestamp'], errors='coerce')
+            df = df.dropna(subset=['timestamp'])
+
+            if not df.empty:
+                # Группировка по дате
+                df['date'] = df['timestamp'].dt.date
+                daily_activity = df.groupby('date').size().reset_index(name='requests')
+                # Сортировка и выбор последних 7 дней
+                daily_activity = daily_activity.sort_values('date', ascending=False).head(7)
+
+                # Добавление данных в отчет
+                if not daily_activity.empty:
+                    report += "\n📅 Активность за последние 7 дней:\n"
+                    for _, row in daily_activity.iterrows():
+                        report += f"  {row['date']}: {row['requests']} запросов\n"
+                else:
+                    report += "\n📅 Нет данных о ежедневной активности\n"
+            else:
+                report += "\n📅 Нет данных о ежедневной активности\n"
+        except Exception as e:
+            # Обработка ошибок анализа времени
+            logger.error(f"Ошибка при расчете ежедневной активности: {e}")
+            report += "\n📅 Не удалось рассчитать ежедневную активность\n"
+
+        # Отправка текстового отчета
+        update.message.reply_text(report)
+
+        # Создание и отправка графика (если есть данные)
+        if not popular_cities.empty:
+            plt.figure(figsize=(10, 6))  # Размер графика
+            # Построение столбчатой диаграммы
+            popular_cities.plot(kind='bar', color='skyblue')
+            plt.title('Топ запрашиваемых городов')  # Заголовок
+            plt.ylabel('Количество запросов')  # Подпись оси Y
+            plt.xticks(rotation=45, ha='right')  # Наклон подписей
+            plt.tight_layout()  # Оптимизация расположения
+
+            # Сохранение в бинарный буфер
+            buf = BytesIO()
+            plt.savefig(buf, format='png', dpi=80)
+            buf.seek(0)
+
+            # Отправка изображения
+            update.message.reply_photo(photo=buf)
+            buf.close()  # Закрытие буфера
+            plt.close()  # Закрытие графика
+
     except Exception as e:
-        logger.error(f"Ошибка в show_currency_rates: {e}", exc_info=True)
-        bot.send_message(message.chat.id, "Произошла ошибка при получении курсов валют")
+        # Обработка общих ошибок статистики
+        logger.error(f"Ошибка генерации статистики: {e}", exc_info=True)
+        update.message.reply_text("⚠️ Произошла ошибка при формировании статистики")
 
 
-def get_currency_rates():
-    """Получение курсов валют от ЦБ РФ"""
-    try:
-        response = requests.get(CBR_API_URL)
-        data = response.json()
+def main():
+    """Основная функция инициализации и запуска бота"""
+    updater = Updater(VALERIADMIN_TG_BOT_API_KEY)  # Создание объекта Updater
+    dispatcher = updater.dispatcher  # Получение диспетчера
 
-        return {
-            'USD': round(data['Valute']['USD']['Value'], 2),
-            'EUR': round(data['Valute']['EUR']['Value'], 2),
-            'CNY': round(data['Valute']['CNY']['Value'], 2)
-        }
-    except Exception as e:
-        logger.error(f"Ошибка в get_currency_rates: {e}", exc_info=True)
-        return None
+    # Настройка обработчика диалогов для погоды
+    conv_handler = ConversationHandler(
+        entry_points=[CallbackQueryHandler(button_click, pattern='^weather$')],  # Точка входа
+        states={
+            WAIT_CITY: [MessageHandler(Filters.text & ~Filters.command, get_weather)],  # Ожидание города
+            SHOW_INFO: [CallbackQueryHandler(button_click)]  # Показать информацию
+        },
+        fallbacks=[CommandHandler('cancel', cancel)],  # Обработчик отмены
+        allow_reentry=True  # Разрешение повторного входа
+    )
+
+    # Регистрация обработчиков
+    dispatcher.add_handler(conv_handler)  # Диалоги погоды
+    dispatcher.add_handler(CommandHandler("start", start))  # Команда /start
+    # Обработчики инлайн-кнопок
+    dispatcher.add_handler(CallbackQueryHandler(button_click, pattern='^(currency|back_to_menu|close)$'))
+    # Обработчик статистики
+    dispatcher.add_handler(CommandHandler("weather_stats", weather_stats))
+
+    updater.start_polling()  # Запуск бота в режиме опроса
+    logger.info("Бот запущен и готов к работе")  # Запись в лог
+    updater.idle()  # Бесконечный цикл до остановки
 
 
 if __name__ == '__main__':
-    logger.info("Бот запущен")
-    bot.polling(none_stop=True)
+    main()  # Запуск приложения
