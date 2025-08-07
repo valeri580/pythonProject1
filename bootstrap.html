@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Готовим кабачки</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        .section {
+            padding: 60px 0;
+        }
+        .carousel-item img {
+            height: 500px;
+            object-fit: cover;
+        }
+        .btn-primary {
+            background-color: #4CAF50;
+            border-color: #4CAF50;
+        }
+        .btn-secondary {
+            background-color: #8BC34A;
+            border-color: #8BC34A;
+        }
+        .btn-info {
+            background-color: #CDDC39;
+            border-color: #CDDC39;
+            color: #333;
+        }
+        .btn-contact {
+            background-color: #FF9800;
+            border-color: #FF9800;
+            color: white;
+        }
+        .card-img-top {
+            height: 250px;
+            object-fit: cover;
+        }
+    </style>
+</head>
+<body>
+    <!-- Шапка сайта -->
+    <header class="bg-success text-white py-4">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h1 class="mb-0">Готовим кабачки</h1>
+                </div>
+                <div class="col-md-6 text-md-end mt-3 mt-md-0">
+                    <div class="d-flex flex-column flex-md-row justify-content-md-end gap-2">
+                        <a href="#main" class="btn btn-primary">Главная</a>
+                        <a href="#recipes" class="btn btn-secondary">3 рецепта</a>
+                        <a href="#tips" class="btn btn-info">Лайфхаки</a>
+                        <a href="#footer" class="btn btn-contact">Контакты</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Основной контент -->
+    <main>
+        <!-- Секция 1: Слайдер -->
+        <section id="main" class="section bg-light">
+            <div class="container">
+                <h2 class="text-center mb-5">3 блюда из кабачка</h2>
+                <div id="recipeCarousel" class="carousel slide" data-bs-ride="carousel">
+                    <div class="carousel-inner rounded">
+                        <!-- Кабачковые оладьи -->
+                        <div class="carousel-item active">
+                            <img src="https://img.iamcook.ru/2020/upl/recipes/cat/u-ebf9226b874e1999fffe7b0c1db6ed7c.JPG" class="d-block w-100" alt="Кабачковые оладьи">
+                            <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50">
+                                <h5>Кабачковые оладьи</h5>
+                            </div>
+                        </div>
+                        <!-- Кабачки в духовке с сыром -->
+                        <div class="carousel-item">
+                            <img src="https://static.1000.menu/img/content-v2/0c/88/66144/kabachki-v-duxovke-s-syrom-i-chesnokom_1657120643_0_max.jpg" class="d-block w-100" alt="Кабачки в духовке с сыром">
+                            <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50">
+                                <h5>Кабачки в духовке с сыром</h5>
+                            </div>
+                        </div>
+                        <!-- Кабачковая икра -->
+                        <div class="carousel-item">
+                            <img src="https://static.1000.menu/img/content-v2/8b/a4/31689/kabachkovaya-ikra-klassicheskaya_1699761094_20_max.jpg" class="d-block w-100" alt="Кабачковая икра">
+                            <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50">
+                                <h5>Кабачковая икра</h5>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#recipeCarousel" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#recipeCarousel" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Секция 2: 3 рецепта -->
+        <section id="recipes" class="section">
+            <div class="container">
+                <h2 class="text-center mb-5">3 рецепта</h2>
+                <div class="row">
+                    <!-- Карточка 1: Кабачковые оладьи -->
+                    <div class="col-md-4 mb-4">
+                        <div class="card h-100">
+                            <img src="https://img.iamcook.ru/2020/upl/recipes/cat/u-ebf9226b874e1999fffe7b0c1db6ed7c.JPG" class="card-img-top" alt="Кабачковые оладьи">
+                            <div class="card-body">
+                                <h5 class="card-title">Кабачковые оладьи</h5>
+                                <p class="card-text">Хрустящие снаружи и нежные внутри оладьи из кабачков - идеальный завтрак или легкий ужин.</p>
+                                <ul class="list-group list-group-flush mb-3">
+                                    <li class="list-group-item">Молодые кабачки - 500 г</li>
+                                    <li class="list-group-item">Яйца - 2 шт.</li>
+                                    <li class="list-group-item">Мука - 5 ст.л.</li>
+                                    <li class="list-group-item">Зелень укропа - по вкусу</li>
+                                </ul>
+                                <a href="#oladi" class="btn btn-success" data-bs-toggle="modal">Читать рецепт</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Карточка 2: Кабачки в духовке с сыром -->
+                    <div class="col-md-4 mb-4">
+                        <div class="card h-100">
+                            <img src="https://static.1000.menu/img/content-v2/0c/88/66144/kabachki-v-duxovke-s-syrom-i-chesnokom_1657120643_0_max.jpg" class="card-img-top" alt="Кабачки в духовке с сыром">
+                            <div class="card-body">
+                                <h5 class="card-title">Кабачки в духовке с сыром</h5>
+                                <p class="card-text">Нежное блюдо с хрустящей сырной корочкой - прекрасный гарнир или самостоятельное блюдо.</p>
+                                <ul class="list-group list-group-flush mb-3">
+                                    <li class="list-group-item">Кабачки - 2 средних</li>
+                                    <li class="list-group-item">Сыр твёрдый - 150 г</li>
+                                    <li class="list-group-item">Чеснок - 2 зубчика</li>
+                                    <li class="list-group-item">Сметана - 3 ст.л.</li>
+                                </ul>
+                                <a href="#duhoven" class="btn btn-success" data-bs-toggle="modal">Читать рецепт</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Карточка 3: Кабачковая икра -->
+                    <div class="col-md-4 mb-4">
+                        <div class="card h-100">
+                            <img src="https://static.1000.menu/img/content-v2/8b/a4/31689/kabachkovaya-ikra-klassicheskaya_1699761094_20_max.jpg" class="card-img-top" alt="Кабачковая икра">
+                            <div class="card-body">
+                                <h5 class="card-title">Кабачковая икра</h5>
+                                <p class="card-text">Знаменитая закуска советских времён, которая остается популярной и сегодня.</p>
+                                <ul class="list-group list-group-flush mb-3">
+                                    <li class="list-group-item">Кабачки - 2 кг</li>
+                                    <li class="list-group-item">Морковь - 3 шт.</li>
+                                    <li class="list-group-item">Лук репчатый - 3 шт.</li>
+                                    <li class="list-group-item">Томатная паста - 2 ст.л.</li>
+                                </ul>
+                                <a href="#ikra" class="btn btn-success" data-bs-toggle="modal">Читать рецепт</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Модальные окна с рецептами -->
+        <!-- Модальное окно: Кабачковые оладьи -->
+        <div class="modal fade" id="oladi" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Кабачковые оладьи</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <img src="https://img1.russianfood.com/dycontent/images_upl/323/big_322381.jpg" class="img-fluid mb-3" alt="Кабачковые оладьи">
+                        <h6>Ингредиенты:</h6>
+                        <ul>
+                            <li>Молодые кабачки - 500 г</li>
+                            <li>Яйца - 2 шт.</li>
+                            <li>Мука - 5 ст.л.</li>
+                            <li>Соль - по вкусу</li>
+                            <li>Растительное масло для жарки</li>
+                        </ul>
+                        <h6>Приготовление:</h6>
+                        <ol>
+                            <li>Кабачки натереть на крупной терке, посолить и оставить на 10 минут.</li>
+                            <li>Отжать лишний сок, добавить яйца и муку, перемешать.</li>
+                            <li>Разогреть масло на сковороде, выкладывать тесто ложкой.</li>
+                            <li>Жарить на среднем огне до золотистой корочки с обеих сторон.</li>
+                            <li>Подавать со сметаной или чесночным соусом.</li>
+                        </ol>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Модальное окно: Кабачки в духовке с сыром -->
+        <div class="modal fade" id="duhoven" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Кабачки в духовке с сыром</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <img src="https://img1.russianfood.com/dycontent/images_upl/490/big_489343.jpg" class="img-fluid mb-3" alt="Кабачки в духовке с сыром">
+                        <h6>Ингредиенты:</h6>
+                        <ul>
+                            <li>Кабачки - 2 средних</li>
+                            <li>Сыр твёрдый - 150 г</li>
+                            <li>Чеснок - 2 зубчика</li>
+                            <li>Сметана - 3 ст.л.</li>
+                            <li>Зелень, соль, перец - по вкусу</li>
+                        </ul>
+                        <h6>Приготовление:</h6>
+                        <ol>
+                            <li>Кабачки нарезать кружочками толщиной 1 см.</li>
+                            <li>Выложить на противень, слегка посолить.</li>
+                            <li>Смешать сметану с измельченным чесноком и зеленью.</li>
+                            <li>Смазать кабачки полученной смесью.</li>
+                            <li>Посыпать тертым сыром и запекать при 180°C 20-25 минут.</li>
+                        </ol>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Модальное окно: Кабачковая икра -->
+        <div class="modal fade" id="ikra" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Кабачковая икра</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <img src="https://img1.russianfood.com/dycontent/images_upl/323/big_322385.jpg" class="img-fluid mb-3" alt="Кабачковая икра">
+                        <h6>Ингредиенты:</h6>
+                        <ul>
+                            <li>Кабачки - 2 кг</li>
+                            <li>Морковь - 3 шт.</li>
+                            <li>Лук репчатый - 3 шт.</li>
+                            <li>Томатная паста - 2 ст.л.</li>
+                            <li>Растительное масло - 100 мл</li>
+                            <li>Соль, перец, сахар - по вкусу</li>
+                        </ul>
+                        <h6>Приготовление:</h6>
+                        <ol>
+                            <li>Овощи очистить и нарезать кубиками.</li>
+                            <li>Обжарить лук и морковь на масле до мягкости.</li>
+                            <li>Добавить кабачки и тушить под крышкой 30 минут.</li>
+                            <li>Добавить томатную пасту, соль, перец, сахар.</li>
+                            <li>Измельчить блендером или пропустить через мясорубку.</li>
+                            <li>Протушить еще 10 минут и разложить по банкам.</li>
+                        </ol>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Секция 3: Лайфхаки -->
+        <section id="tips" class="section bg-light">
+            <div class="container">
+                <h2 class="text-center mb-5">Лайфхаки по кабачкам</h2>
+                <div class="accordion" id="tipsAccordion">
+                    <!-- Совет 1 -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#tip1">
+                                Как выбрать хорошие кабачки
+                            </button>
+                        </h2>
+                        <div id="tip1" class="accordion-collapse collapse show" data-bs-parent="#tipsAccordion">
+                            <div class="accordion-body">
+                                Выбирайте молодые кабачки небольшого размера (15-20 см) с тонкой кожицей. Они более нежные и вкусные. Обратите внимание, чтобы на поверхности не было повреждений и пятен.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Совет 2 -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#tip2">
+                                Хранение кабачков
+                            </button>
+                        </h2>
+                        <div id="tip2" class="accordion-collapse collapse" data-bs-parent="#tipsAccordion">
+                            <div class="accordion-body">
+                                Свежие кабачки лучше хранить в холодильнике в отделении для овощей. Не мойте их перед хранением - это сокращает срок годности. Оптимальный срок хранения - 5-7 дней.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Совет 3 -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#tip3">
+                                Как убрать лишнюю влагу
+                            </button>
+                        </h2>
+                        <div id="tip3" class="accordion-collapse collapse" data-bs-parent="#tipsAccordion">
+                            <div class="accordion-body">
+                                Перед приготовлением натрите кабачки на терке, посолите и оставьте на 10 минут. Затем отожмите - это удалит лишнюю влагу и сделает блюдо более вкусным.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Совет 4 -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#tip4">
+                                Заморозка кабачков
+                            </button>
+                        </h2>
+                        <div id="tip4" class="accordion-collapse collapse" data-bs-parent="#tipsAccordion">
+                            <div class="accordion-body">
+                                Кабачки можно заморозить на зиму. Нарежьте их кубиками или кружочками, бланшируйте 1-2 минуты в кипящей воде, охладите в ледяной воде, просушите и заморозьте в пакетах.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Футер -->
+    <footer id="footer" class="bg-dark text-white py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Контактная информация</h5>
+                    <ul class="list-unstyled">
+                        <li><i class="bi bi-telephone me-2"></i> +7 (123) 456-78-90</li>
+                        <li><i class="bi bi-envelope me-2"></i> kabachki@example.com</li>
+                        <li><i class="bi bi-geo-alt me-2"></i> г. Москва, ул. Овощная, 15</li>
+                    </ul>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <h5>Социальные сети</h5>
+                    <a href="https://t.me/kabachki" class="text-white me-2" target="_blank">
+                        <i class="bi bi-telegram fs-4"></i>
+                    </a>
+                    <a href="#" class="text-white me-2">
+                        <i class="bi bi-instagram fs-4"></i>
+                    </a>
+                    <a href="#" class="text-white">
+                        <i class="bi bi-facebook fs-4"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="text-center mt-3">
+                <small>&copy; 2023 Готовим кабачки. Все права защищены.</small>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
